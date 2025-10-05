@@ -28,13 +28,14 @@ with open("rules.json", "r", encoding="utf-8") as f:
 
 MAIN_MENU = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Quiz"), KeyboardButton(text="Topics")],
-        [KeyboardButton(text="Progress"), KeyboardButton(text="Literature")],
-        [KeyboardButton(text="Help")]
+        [KeyboardButton(text="🧠 Quiz"), KeyboardButton(text="📚 Topics")],
+        [KeyboardButton(text="📈 Progress"), KeyboardButton(text="📘 Literature")],
+        [KeyboardButton(text="💬 Help")]
     ],
     resize_keyboard=True
 )
 
+# Database setup & user management
 async def ensure_user(user_id: int, username: str):
     async with aiosqlite.connect("bot.db") as db:
         await db.execute(
@@ -73,9 +74,7 @@ async def ensure_user(user_id: int, username: str):
 
 async def get_user(user_id: int):
     async with aiosqlite.connect("bot.db") as db:
-        cur = await db.execute(
-            "SELECT * FROM users WHERE id = ?", (user_id,)
-        )
+        cur = await db.execute("SELECT * FROM users WHERE id = ?", (user_id,))
         row = await cur.fetchone()
     if not row:
         return None
@@ -97,9 +96,7 @@ async def update_user(user_id: int, **kwargs):
 
 async def get_topic_weights(user_id: int):
     async with aiosqlite.connect("bot.db") as db:
-        cur = await db.execute(
-            "SELECT topic, weight FROM topic_stats WHERE user_id = ?", (user_id,)
-        )
+        cur = await db.execute("SELECT topic, weight FROM topic_stats WHERE user_id = ?", (user_id,))
         rows = await cur.fetchall()
     return {r[0]: r[1] for r in rows}
 
@@ -134,6 +131,7 @@ async def record_attempt(user_id: int, qid: str, correct: bool):
         )
         await db.commit()
 
+# Question logic
 def choose_question(topic: str, difficulty: str, weights: dict):
     pool = []
     topics = [topic] if topic != "Mixed" else list(QDB.keys())
@@ -156,78 +154,91 @@ async def send_question(chat_id: int, user_id: int, topic: str, difficulty: str)
     weights = await get_topic_weights(user_id)
     chosen = choose_question(topic, difficulty, weights)
     if not chosen:
-        await bot.send_message(chat_id, "No questions available.")
+        await bot.send_message(chat_id, "❌ No questions available.")
         return
     t, q = chosen
     buttons = [
-        [InlineKeyboardButton(text=opt, callback_data=f"answer|{t}|{q['id']}|{opt}")]
+        [InlineKeyboardButton(text=f"🔹 {opt}", callback_data=f"answer|{t}|{q['id']}|{opt}")]
         for opt in q["options"]
     ]
-    buttons.append([InlineKeyboardButton(text="Skip", callback_data=f"skip|{t}|{q['id']}")])
+    buttons.append([InlineKeyboardButton(text="⏭️ Skip", callback_data=f"skip|{t}|{q['id']}")])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-    await bot.send_message(chat_id, f"Topic: {t}\n{q['question']}", reply_markup=keyboard)
+    await bot.send_message(
+        chat_id,
+        f"📘 *Topic:* {t}\n"
+        f"💡 *Question:* {q['question']}",
+        reply_markup=keyboard,
+        parse_mode="Markdown"
+    )
 
+# Handlers
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await ensure_user(message.from_user.id, message.from_user.username)
-    await message.answer("Welcome to DSA Practice Bot. Use the menu below:", reply_markup=MAIN_MENU)
+    await message.answer(
+        "🤖 *Welcome to DSA Learning Bot!*\n\n"
+        "📚 Master *Data Structures & Algorithms* with quizzes, adaptive difficulty, and instant feedback.\n\n"
+        "Use the menu below to begin 👇",
+        reply_markup=MAIN_MENU,
+        parse_mode="Markdown"
+    )
 
-@dp.message(F.text == "Literature")
+@dp.message(F.text == "📘 Literature")
 async def menu_lit(message: types.Message):
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
-                text="Algorithms, 4th Edition — Sedgewick & Wayne",
+                text="📖 Algorithms, 4th Edition — Sedgewick & Wayne",
                 callback_data="lit|sedgewick"
             )]
         ]
     )
-    await message.answer("Recommended literature:", reply_markup=keyboard)
+    await message.answer("📚 *Recommended literature:*", reply_markup=keyboard, parse_mode="Markdown")
 
-@dp.message(F.text == "Quiz")
+@dp.message(F.text == "🧠 Quiz")
 async def menu_quiz(message: types.Message):
     await ensure_user(message.from_user.id, message.from_user.username)
-    buttons = [
-        [InlineKeyboardButton(text="Mixed", callback_data="start_quiz|Mixed")]
-    ]
+    buttons = [[InlineKeyboardButton(text="🌐 Mixed Topics", callback_data="start_quiz|Mixed")]]
     for t in QDB.keys():
-        buttons.append([InlineKeyboardButton(text=t, callback_data=f"start_quiz|{t}")])
+        buttons.append([InlineKeyboardButton(text=f"📘 {t}", callback_data=f"start_quiz|{t}")])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-    await message.answer("Choose topic for quiz:", reply_markup=keyboard)
+    await message.answer("🎯 *Choose a topic to start your quiz:*", reply_markup=keyboard, parse_mode="Markdown")
 
-@dp.message(F.text == "Topics")
+@dp.message(F.text == "📚 Topics")
 async def menu_topics(message: types.Message):
-    buttons = [
-        [InlineKeyboardButton(text=t, callback_data=f"topic_info|{t}")]
-        for t in QDB.keys()
-    ]
+    buttons = [[InlineKeyboardButton(text=f"📘 {t}", callback_data=f"topic_info|{t}")] for t in QDB.keys()]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-    await message.answer("Select a topic to see theory:", reply_markup=keyboard)
+    await message.answer("🧩 *Select a topic to review theory:*", reply_markup=keyboard, parse_mode="Markdown")
 
-@dp.message(F.text == "Progress")
+@dp.message(F.text == "📈 Progress")
 async def menu_progress(message: types.Message):
     u = await get_user(message.from_user.id)
     if not u:
         await ensure_user(message.from_user.id, message.from_user.username)
         u = await get_user(message.from_user.id)
     weights = await get_topic_weights(message.from_user.id)
-    text = "\n".join([
-        f"User: {u['username'] or u['id']}",
-        f"Difficulty: {u['difficulty']}",
-        f"Correct streak: {u['correct_streak']}",
-        f"Wrong streak: {u['wrong_streak']}",
-        f"Active topic: {u['active_topic']}",
-        "",
-        "Topic weights:"
-    ] + [f"{k}: {v:.2f}" for k, v in weights.items()])
-    await message.answer(text)
+    text = (
+        f"📊 *Your Progress Summary*\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"👤 User: `{u['username'] or u['id']}`\n"
+        f"🎯 Difficulty: *{u['difficulty']}*\n"
+        f"🔥 Correct Streak: *{u['correct_streak']}*\n"
+        f"💥 Wrong Streak: *{u['wrong_streak']}*\n"
+        f"📘 Active Topic: *{u['active_topic']}*\n\n"
+        f"📈 *Topic Weights:*\n"
+    )
+    for k, v in weights.items():
+        text += f"▫️ {k}: {v:.2f}\n"
+    await message.answer(text, parse_mode="Markdown")
 
 @dp.callback_query(lambda c: c.data and c.data.startswith("lit|"))
 async def cb_lit(callback: types.CallbackQuery):
     if "sedgewick" in callback.data:
         await callback.message.answer(
-            "Reference: Algorithms, 4th Edition by Robert Sedgewick & Kevin Wayne\n"
-            "Filename: Algorithms%204th%20Edition%20by%20Robert%20Sedgewick,%20Kevin%20Wayne.pdf"
+            "📘 *Reference:*\n"
+            "[Algorithms, 4th Edition — Robert Sedgewick & Kevin Wayne]"
+            "(https://www.cs.princeton.edu/~rs/Algs4.pdf)",
+            parse_mode="Markdown"
         )
     await callback.answer()
 
@@ -239,8 +250,8 @@ async def cb_start_quiz(callback: types.CallbackQuery):
     u = await get_user(callback.from_user.id)
     if topic != "Mixed":
         theory = QDB[topic]["theory"]
-        await callback.message.answer(f"Theory for {topic}:\n{theory}")
-    await callback.message.answer("Starting quiz...")
+        await callback.message.answer(f"📘 *Theory for {topic}:*\n\n{theory}", parse_mode="Markdown")
+    await callback.message.answer("🚀 *Starting quiz...*", parse_mode="Markdown")
     await send_question(callback.message.chat.id, callback.from_user.id, topic, u["difficulty"])
     await callback.answer()
 
@@ -252,16 +263,19 @@ async def cb_answer(callback: types.CallbackQuery):
     u = await get_user(user_id)
 
     if cmd == "skip":
-        await callback.message.answer("Skipped. Next question:")
+        await callback.message.answer("⏭️ Skipped! Next question:")
         await send_question(callback.message.chat.id, user_id, u["active_topic"], u["difficulty"])
         await callback.answer()
         return
 
     selected = parts[3]
-    q = next((qq for lvl in ["easy", "medium", "hard"] for qq in QDB[topic]["questions"].get(lvl, [])
-              if qq["id"] == qid), None)
+    q = next(
+        (qq for lvl in ["easy", "medium", "hard"] for qq in QDB[topic]["questions"].get(lvl, [])
+         if qq["id"] == qid),
+        None
+    )
     if not q:
-        await callback.answer("Question not found.")
+        await callback.answer("⚠️ Question not found.")
         return
 
     correct = (selected == q["answer"])
@@ -269,21 +283,21 @@ async def cb_answer(callback: types.CallbackQuery):
     if correct:
         await update_user(user_id, correct_streak=u["correct_streak"] + 1, wrong_streak=0)
         await update_topic_weight(user_id, topic, -0.3)
-        await callback.message.answer("✅ Correct")
+        await callback.message.answer("✅ *Correct!* Well done 🎉", parse_mode="Markdown")
     else:
         await update_user(user_id, correct_streak=0, wrong_streak=u["wrong_streak"] + 1)
         await update_topic_weight(user_id, topic, 0.5)
-        await callback.message.answer(f"❌ Wrong. Correct: {q['answer']}")
+        await callback.message.answer(f"❌ *Wrong.* Correct answer: `{q['answer']}`", parse_mode="Markdown")
 
     u = await get_user(user_id)
     levels = ["easy", "medium", "hard"]
     idx = levels.index(u["difficulty"])
     if u["correct_streak"] >= 3 and idx < 2:
         await update_user(user_id, difficulty=levels[idx + 1])
-        await callback.message.answer(f"Difficulty increased to {levels[idx + 1]}")
+        await callback.message.answer(f"🌟 Difficulty increased to *{levels[idx + 1]}*", parse_mode="Markdown")
     if u["wrong_streak"] >= 2 and idx > 0:
         await update_user(user_id, difficulty=levels[idx - 1])
-        await callback.message.answer(f"Difficulty decreased to {levels[idx - 1]}")
+        await callback.message.answer(f"⚙️ Difficulty decreased to *{levels[idx - 1]}*", parse_mode="Markdown")
 
     await send_question(callback.message.chat.id, user_id, u["active_topic"], u["difficulty"])
     await callback.answer()
@@ -295,7 +309,7 @@ async def fallback(message: types.Message):
         if any(keyword in text for keyword in rule["keywords"]):
             await message.answer(random.choice(rule["responses"]))
             return
-    await message.answer("Use menu options: Quiz / Topics / Progress / Literature / Help")
+    await message.answer("💡 Use menu options below to continue:", reply_markup=MAIN_MENU)
 
 async def main():
     await dp.start_polling(bot)
