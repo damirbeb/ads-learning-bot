@@ -1,0 +1,155 @@
+{
+  "topics": {
+    "Arrays": {
+      "theory": "Arrays are contiguous memory structures. Access by index is O(1). Use arrays for fixed-size collections and random access.",
+      "questions": {
+        "easy": [
+          {
+            "id": "arr_e1",
+            "question": "What is the time complexity to access element by index in an array?",
+            "options": ["O(1)", "O(n)", "O(log n)", "O(n log n)"],
+            "answer": "O(1)"
+          },
+          {
+            "id": "arr_e2",
+            "question": "Which operation is generally expensive on dynamic arrays when resizing happens?",
+            "options": ["Push at end (amortized)", "Pop at end", "Insert at beginning", "Access by index"],
+            "answer": "Insert at beginning"
+          }
+        ],
+        "medium": [
+          {
+            "id": "arr_m1",
+            "question": "Find the in-place algorithmic complexity to remove duplicates from a sorted array.",
+            "options": ["O(n)", "O(n log n)", "O(log n)", "O(n^2)"],
+            "answer": "O(n)"
+          }
+        ],
+        "hard": [
+          {
+            "id": "arr_h1",
+            "question": "Given an array, the two-pointer technique can solve which problem efficiently?",
+            "options": ["Sum pairs in sorted array", "Matrix multiplication", "BFS traversal", "Topological sort"],
+            "answer": "Sum pairs in sorted array"
+          }
+        ]
+      }
+    },
+    "Trees": {
+      "theory": "Trees are hierarchical structures. Binary trees have at most two children. Balanced trees (AVL, Red-Black) give O(log n) operations.",
+      "questions": {
+        "easy": [
+          {
+            "id": "tree_e1",
+            "question": "Which traversal visits root between left and right subtree?",
+            "options": ["Preorder", "Inorder", "Postorder", "Level order"],
+            "answer": "Inorder"
+          }
+        ],
+        "medium": [
+          {
+            "id": "tree_m1",
+            "question": "Average time complexity to search in a balanced binary search tree?",
+            "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+            "answer": "O(log n)"
+          }
+        ],
+        "hard": [
+          {
+            "id": "tree_h1",
+            "question": "Which rotation is used to rebalance an AVL tree when the left subtree is heavy and left child's right subtree is heavy?",
+            "options": ["Left rotation", "Right rotation", "Left-Right rotation", "Right-Left rotation"],
+            "answer": "Left-Right rotation"
+          }
+        ]
+      }
+    },
+    "Graphs": {
+      "theory": "Graphs represent relationships. Use adjacency lists for sparse graphs and adjacency matrices for dense graphs. BFS finds shortest path in unweighted graphs.",
+      "questions": {
+        "easy": [
+          {
+            "id": "graph_e1",
+            "question": "Which algorithm finds shortest paths from a source in an unweighted graph?",
+            "options": ["Dijkstra", "BFS", "DFS", "Prim"],
+            "answer": "BFS"
+          }
+        ],
+        "medium": [
+          {
+            "id": "graph_m1",
+            "question": "Which algorithm computes shortest paths in graphs with non-negative weights?",
+            "options": ["Bellman-Ford", "Dijkstra", "Kruskal", "Tarjan"],
+            "answer": "Dijkstra"
+          }
+        ],
+        "hard": [
+          {
+            "id": "graph_h1",
+            "question": "Which structure is used in union-find for Kruskal's MST algorithm?",
+            "options": ["Priority Queue", "Disjoint Set (Union-Find)", "Adjacency Matrix", "Segment Tree"],
+            "answer": "Disjoint Set (Union-Find)"
+          }
+        ]
+      }
+    },
+    "Sorting": {
+      "theory": "Sorting algorithms order elements. Merge sort and quicksort are divide-and-conquer algorithms. Merge sort is stable and O(n log n). Quicksort average O(n log n) but worst O(n^2).",
+      "questions": {
+        "easy": [
+          {
+            "id": "sort_e1",
+            "question": "Which sort is stable by default?",
+            "options": ["Quick Sort", "Merge Sort", "Heap Sort", "Selection Sort"],
+            "answer": "Merge Sort"
+          }
+        ],
+        "medium": [
+          {
+            "id": "sort_m1",
+            "question": "What is average-case complexity of quicksort?",
+            "options": ["O(n)", "O(n log n)", "O(n^2)", "O(log n)"],
+            "answer": "O(n log n)"
+          }
+        ],
+        "hard": [
+          {
+            "id": "sort_h1",
+            "question": "Which sorting algorithm uses heap data structure?",
+            "options": ["Heap Sort", "Insertion Sort", "Counting Sort", "Radix Sort"],
+            "answer": "Heap Sort"
+          }
+        ]
+      }
+    },
+    "Complexity": {
+      "theory": "Complexity analysis uses Big O notation for time and space. Best, average and worst cases describe algorithm behavior under different inputs.",
+      "questions": {
+        "easy": [
+          {
+            "id": "comp_e1",
+            "question": "What is Big O of binary search on sorted array?",
+            "options": ["O(log n)", "O(n)", "O(n log n)", "O(1)"],
+            "answer": "O(log n)"
+          }
+        ],
+        "medium": [
+          {
+            "id": "comp_m1",
+            "question": "Which is an exponential time complexity?",
+            "options": ["O(n!)", "O(n log n)", "O(n^2)", "O(log n)"],
+            "answer": "O(n!)"
+          }
+        ],
+        "hard": [
+          {
+            "id": "comp_h1",
+            "question": "If an algorithm runs in O(n log n) and input doubles, how does runtime scale approximately?",
+            "options": ["Doubles", "More than doubles", "Less than doubles", "Quadruples"],
+            "answer": "More than doubles"
+          }
+        ]
+      }
+    }
+  }
+}

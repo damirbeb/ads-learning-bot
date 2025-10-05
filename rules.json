@@ -1,0 +1,30 @@
+[
+  {
+    "keywords": ["help", "confused", "how"],
+    "responses": [
+      "Don't worry! Try reading the theory section first.",
+      "Review the basics. Start with Arrays and Linked Lists."
+    ]
+  },
+  {
+    "keywords": ["explain", "why", "reason"],
+    "responses": [
+      "Every algorithm has logic. Break it into smaller steps to understand.",
+      "Think about what operation dominates time complexity."
+    ]
+  },
+  {
+    "keywords": ["don’t know", "idk", "no idea", "dont know"],
+    "responses": [
+      "That's okay! Use theory and then try again.",
+      "You can skip and move to next, or review the topic’s theory."
+    ]
+  },
+  {
+    "keywords": ["good", "great", "easy"],
+    "responses": [
+      "Awesome! Let's try a harder one next.",
+      "Well done! Keep pushing forward."
+    ]
+  }
+]
